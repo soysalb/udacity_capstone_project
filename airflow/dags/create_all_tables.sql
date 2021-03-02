@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS tickers (
 CREATE TABLE IF NOT EXISTS exchanges (
 	ExchangeKey varchar(256),
 	WebUrl varchar(65535),
-	DocUrl varchar(65536),
+	DocUrl varchar(65535),
 	Version varchar(256)
 	CONSTRAINT exchange_pkey PRIMARY KEY (ExchangeKey)
 );
