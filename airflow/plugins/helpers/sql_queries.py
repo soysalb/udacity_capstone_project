@@ -33,7 +33,7 @@ class SqlQueries:
                 Version
         FROM    staging_tickers tickers, 
                 staging_exchanges exchanges
-        WHERE   tickers.ExchangeKey = exchanges.ExchangeKey and
+        WHERE   tickers.ExchangeKey = LOWER(exchanges.ExchangeKey) and
                 ExchangeKey is not null
     """)
 
