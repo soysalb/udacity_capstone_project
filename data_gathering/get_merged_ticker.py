@@ -50,6 +50,12 @@ tickers.dropna(how="all", inplace=True)
 tickers.reset_index(drop=True, inplace=True)
 tickers.index = tickers.index + 1
 tickers.reset_index(drop=False, inplace=True)
+tickers.call_ts = tickers.call_ts.fillna("1614526547105.0")
+tickers.call_ts = tickers.call_ts.astype(float)
+tickers.call_ts = tickers.call_ts.astype(int)
+tickers["call_ts"] = pd.to_datetime(tickers["call_ts"], unit='ms')
+tickers["call_dt"] = tickers["call_ts"].apply(lambda x: x.date().strftime("%m/%d/%Y"))
+tickers["call_ts"] = tickers.call_ts.astype(str)
 
-tickers.to_csv("/Users/berna/PycharmProjects/udacity_capstone/data/staging_tickers.csv")
+tickers.to_csv("/Users/berna/PycharmProjects/udacity_capstone/data/staging_tickers.csv", index=False)
 # s3.meta.client.upload_file(Filename="tickers.csv", Bucket="udacity-capstone-bucket-berna", Key="tickers.csv")

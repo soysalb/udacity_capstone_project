@@ -38,7 +38,7 @@ stage_exchanges_to_redshift = StageToRedshiftOperator(
     task_id='stage_exchanges_to_redshift',
     dag=dag,
     table="staging_exchanges",
-    s3_bucket='udacity-capstone-bucket-berna',
+    s3_bucket='cryptocurrency-tickers-exchanges',
     s3_key='staging_exchanges',
     redshift_conn_id="redshift",
     aws_credentials_id="aws_credentials",
@@ -50,8 +50,8 @@ stage_tickers_to_redshift = StageToRedshiftOperator(
     task_id='stage_tickers_to_redshift',
     dag=dag,
     table="staging_tickers",
-    s3_bucket='udacity-capstone-bucket-berna',
-    s3_key='staging_tickers',
+    s3_bucket='cryptocurrency-tickers-exchanges',
+    s3_key='tickers',
     redshift_conn_id="redshift",
     aws_credentials_id="aws_credentials",
     file_type='csv',
@@ -83,7 +83,7 @@ load_exchanges_dimension_table = LoadDimensionOperator(
     task_id='load_exchanges_dimension_table',
     dag=dag,
     table='exchanges',
-    sql=SqlQueries.recipes_table_insert,
+    sql=SqlQueries.exchanges_table_insert,
     redshift_conn_id='redshift',
     provide_context=True
 )
@@ -103,7 +103,7 @@ run_quality_checks_markets = DataQualityOperator(
     task_id='run_quality_checks_markets',
     dag=dag,
     redshift_conn_id='redshift',
-    query='select count(*) from markets where Symbol is null;',
+    query='select count(*) from(select Symbol, count(*) from markets group by Symbol having count(*) > 1);',
     result=0,
     provide_context=True
 )
@@ -123,6 +123,7 @@ end_operator = DummyOperator(task_id='End_execution', dag=dag)
 
 # Dependicies of Tasks
 start_operator >> create_all_tables >> [stage_exchanges_to_redshift, stage_tickers_to_redshift] >> load_tickers_table
-load_tickers_table >> [load_markets_dimension_table, load_time_dimension_table, load_exchanges_dimension_table] >> [
-    run_quality_checks_markets, run_quality_checks_exchanges]
-run_quality_checks_exchanges >> end_operator
+load_tickers_table >> [load_markets_dimension_table, load_time_dimension_table, load_exchanges_dimension_table]
+load_markets_dimension_table >> run_quality_checks_markets
+load_exchanges_dimension_table >> run_quality_checks_exchanges
+[run_quality_checks_markets, run_quality_checks_exchanges] >> end_operator
